@@ -1,0 +1,59 @@
+# Stage 1: Build and Optimize
+FROM golang:1.26-bookworm AS builder
+
+# 1. Install binaryen for wasm-opt
+RUN apt-get update && apt-get install -y binaryen
+
+WORKDIR /build
+
+# 2. Pre-compile the Go standard library for our intended target.
+RUN GOOS=wasip1 GOARCH=wasm go install std
+
+# 3. Compile the Go compiler itself to WebAssembly/WASI
+RUN GOOS=wasip1 GOARCH=wasm go build -o compile.wasm cmd/compile
+RUN GOOS=wasip1 GOARCH=wasm go build -o link.wasm cmd/link
+
+# 4. Optimize the Wasm binary
+RUN wasm-opt -O3 --all-features compile.wasm -o compile_final.wasm
+RUN wasm-opt -O3 --all-features link.wasm -o link_final.wasm
+
+# 5. Generate importcfg.txt for the standard library
+RUN echo "# importcfg" > importcfg.txt && \
+    GOOS=wasip1 GOARCH=wasm go list -export -f "packagefile {{.ImportPath}}={{.Export}}" std | grep -v "=$" >> importcfg.txt && \
+    sed -i 's|/root/.cache/go-build|/usr/local/go/pkg/obj/go-build|g' importcfg.txt
+
+
+# Stage 2: Build the native byte code from wasm with chicorey
+FROM maven:3.9.12-eclipse-temurin-21 AS jvm
+
+WORKDIR /build
+RUN mkdir -p /build/target/wasm/ && mkdir -p /build/target/generated-resources/chicory-compiler && mkdir -p /build/target/generated-sources/chicory-compiler
+COPY pom.template.xml /build/pom.xml
+COPY --from=builder /build/compile_final.wasm /build/src/main/wasm/gocompiler.wasm
+COPY --from=builder /build/link_final.wasm  /build/src/main/wasm/golinker.wasm
+
+RUN mvn clean install
+
+# Stage 3 Build go root zip (we reuse the builder image to avoid additional dependencies)
+FROM golang:1.26-bookworm AS packer
+
+RUN apt update && apt-get install zip -y
+
+WORKDIR /build
+# Extract the entire GOROOT (which now contains the compiled Wasm standard library)
+COPY --from=builder /usr/local/go /goroot
+COPY --from=builder /root/.cache/go-build /goroot/pkg/obj/go-build
+
+# Zip the whole goroot file 
+WORKDIR /goroot
+RUN  zip -rq /build/goroot.zip .
+
+# Stage 4: Output Extraction
+FROM scratch
+
+COPY --from=builder /build/importcfg.txt /files/importcfg.txt
+
+COPY --from=jvm /build/target/generated-resources/chicory-compiler /resources/
+COPY --from=jvm /build/target/generated-sources/chicory-compiler /sources/
+
+COPY --from=packer /build/goroot.zip /files/goroot.zip

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>io.github.stefanrichterhuber</groupId>
+    <artifactId>javatogo-wasm</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <chicory.version>1.7.2</chicory.version>
+        <maven.compiler.release>21</maven.compiler.release>
+
+        <!-- Unfortunately it is, as of now, not possible to build the go compiler without
+        interbreter fallback to bytecode -->
+        <chicory.interpreterFallback>WARN</chicory.interpreterFallback>
+
+        <go.compiler.wasm>${basedir}/src/main/wasm/gocompiler.wasm</go.compiler.wasm>
+        <go.compiler.class>io.github.stefanrichterhuber.javatogo.wasm.GoCompilerWasm</go.compiler.class>
+        <go.linker.wasm>${basedir}/src/main/wasm/golinker.wasm</go.linker.wasm>
+        <go.linker.class>io.github.stefanrichterhuber.javatogo.wasm.GoLinkerWasm</go.linker.class>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.dylibso.chicory</groupId>
+                <artifactId>bom</artifactId>
+                <version>${chicory.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.dylibso.chicory</groupId>
+            <artifactId>runtime</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.dylibso.chicory</groupId>
+            <artifactId>wasi</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Build the byte code from the wasm file at build time for best performance -->
+            <plugin>
+                <groupId>com.dylibso.chicory</groupId>
+                <artifactId>chicory-compiler-maven-plugin</artifactId>
+                <version>${chicory.version}</version>
+                <executions>
+                    <execution>
+                        <id>compiler-gen</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <interpreterFallback>${chicory.interpreterFallback}</interpreterFallback>
+                            <!-- Translate the Wasm binary into bytecode -->
+                            <wasmFile>${go.compiler.wasm}</wasmFile>
+                            <!-- Name of the generated class to be used -->
+                            <name>${go.compiler.class}</name>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>linker-gen</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <configuration>
+                            <interpreterFallback>${chicory.interpreterFallback}</interpreterFallback>
+                            <!-- Translate the Wasm binary into bytecode -->
+                            <wasmFile>${go.linker.wasm}</wasmFile>
+                            <!-- Name of the generated class to be used -->
+                            <name>${go.linker.class}</name>
+                        </configuration>
+                    </execution>
+
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
