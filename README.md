@@ -11,7 +11,7 @@ Proof of concept for embedding Go code in the JVM, without native dependencies a
 * Compile the Go compiler, linker and standard library to WASM (wasip1)
 * Optimize the wasm files with `wasm-opt`
 * Compile the go compiler and linker wasm to bytecode using chicory build-time compiler
-* In the java code use the go compiler and linker to build go files to wasm at runtime, compile them to bytecode at runtime with chicorey
+* In the java code use the go compiler and linker to build go files to wasm at runtime. Then compile the wasm filesto bytecode at runtime with chicory
 
 ## Open challenges
 
