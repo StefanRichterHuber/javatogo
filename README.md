@@ -1,6 +1,6 @@
 # JavaToGo
 
-JavaToGo is a **totally not production-ready** java library to run Go code in the JVM. It has **no native dependencies at runtime**, but leverages WASM and [Chicory](https://chicory.dev/) to compile Go code to bytecode at runtime. 
+JavaToGo is a **totally not production-ready** java library to run Go code in the JVM. It has **no native dependencies at runtime**, but leverages WASM and [Chicory](https://chicory.dev/) to compile Go code to JVM bytecode. 
 
 ## Why?
 
@@ -11,7 +11,7 @@ Proof of concept for embedding Go code in the JVM, without native dependencies a
 * Compile the Go compiler, linker and standard library to WASM (wasip1)
 * Optimize the wasm files with `wasm-opt`
 * Compile the go compiler and linker wasm to bytecode using chicory build-time compiler
-* In the java code use the go compiler and linker to build go files to wasm at runtime. Then compile the wasm filesto bytecode at runtime with chicory
+* In the java code use the go compiler and linker to build go files to wasm at runtime. Then compile the wasm files to bytecode at runtime with chicory
 
 ## Open challenges
 
@@ -22,7 +22,7 @@ Proof of concept for embedding Go code in the JVM, without native dependencies a
 ## Architecture
 
 The heavy lifting is done in the [Dockerfile.gowasm](./src/main/docker/Dockerfile.gowasm).
-It builds the go standard library, the go compiler and linker to wasm. Afterwards all wasm files are optimized with `wasm-opt` and compiled to byte code (with interpreter fallback) using chicory. The standard library is packed into a zip file. The wasm code is compiled to bytecode right in the dockerfile and not in the main maven project, because this is a very costly process, and the change detection works far better for the Docker than for maven. 
+It builds the go standard library, the go compiler and linker to wasm. Afterwards all wasm files are optimized with `wasm-opt` and compiled to byte code (with interpreter fallback) using chicory. The standard library is packed into a zip file. The wasm code is compiled to bytecode right in the dockerfile and not in the main maven project, because this is a very costly process, and the change detection works far better for the Docker build than for maven. 
 
 The main pom.xml invokes the docker file and copies the necessary files to the target directory. 
 
@@ -33,7 +33,6 @@ This library uses log4j2 for logging on the java side and MessagePack to efficie
 ## How to build
 
 The project is a maven project, so you can build it with `mvn clean install`. It requires Java 21+ and Docker. 
-
 
 ## How to use
 
@@ -46,6 +45,8 @@ Import the library (not yet published on maven central)
     <version>[current version]</version>
 </dependency>
 ```
+
+And just use the class `io.github.stefanrichterhuber.javatogo.GoCompiler` to compile some go code to wasm.
 
 ```java
  private static String EXPORT_FUNC_WITH_STRING_PARAMETER_CODE = """

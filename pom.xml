@@ -36,6 +36,7 @@
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
         <chicory.version>1.7.2</chicory.version>
+        <golang.version>1.26</golang.version>
 
         <!-- Chicory interpreter fallback level. Necessary for dev profile -->
         <chicory.interpreterFallback>WARN</chicory.interpreterFallback>
@@ -150,6 +151,10 @@
                             <executable>docker</executable>
                             <arguments>
                                 <argument>build</argument>
+                                <argument>--build-arg</argument>
+                                <argument>CHICORY_VERSION=${chicory.version}</argument>
+                                <argument>--build-arg</argument>
+                                <argument>GO_VERSION=${golang.version}</argument>
                                 <argument>-f</argument>
                                 <argument>src/main/docker/Dockerfile.gowasm</argument>
                                 <argument>--output</argument>
@@ -203,15 +208,6 @@
                     <value>true</value>
                 </property>
             </activation>
-            <properties>
-                <!-- Build wasm library with release optimizations-->
-                <cargo.profile>release</cargo.profile>
-                <cargo.profile.folder>release</cargo.profile.folder>
-
-                <!-- Release build is so small it could be perfectly compiled without interpreter
-                fallback-->
-                <chicory.interpreterFallback>FAIL</chicory.interpreterFallback>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
