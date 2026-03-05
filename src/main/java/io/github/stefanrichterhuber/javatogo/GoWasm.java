@@ -76,11 +76,11 @@ public final class GoWasm {
                 return;
             }
             try (MessageUnpacker unpacker = MessagePack.newDefaultUnpacker(is)) {
-                int entries = unpacker.unpackMapHeader();
+                final int entries = unpacker.unpackMapHeader();
                 for (int i = 0; i < entries; i++) {
-                    String key = unpacker.unpackString();
-                    int valueLen = unpacker.unpackBinaryHeader();
-                    byte[] value = unpacker.readPayload(valueLen);
+                    final String key = unpacker.unpackString();
+                    final int valueLen = unpacker.unpackBinaryHeader();
+                    final byte[] value = unpacker.readPayload(valueLen);
                     this.cache.put(key, value);
                 }
             }
@@ -103,6 +103,15 @@ public final class GoWasm {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Raw wasm file
+     * 
+     * @return
+     */
+    public byte[] getWasm() {
+        return this.wasm;
     }
 
     /**

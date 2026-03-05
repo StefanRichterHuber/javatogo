@@ -1,5 +1,8 @@
+ARG GO_VERSION="1.26"
+ARG CHICORY_VERSION="1.7.2"
+
 # Stage 1: Build and Optimize
-FROM golang:1.26-bookworm AS builder
+FROM golang:${GO_VERSION}-bookworm AS builder
 
 # 1. Install binaryen for wasm-opt
 RUN apt-get update && apt-get install -y binaryen
@@ -26,16 +29,18 @@ RUN echo "# importcfg" > importcfg.txt && \
 # Stage 2: Build the native byte code from wasm with chicorey
 FROM maven:3.9.12-eclipse-temurin-21 AS jvm
 
+ARG CHICORY_VERSION
+
 WORKDIR /build
 RUN mkdir -p /build/target/wasm/ && mkdir -p /build/target/generated-resources/chicory-compiler && mkdir -p /build/target/generated-sources/chicory-compiler
 COPY pom.template.xml /build/pom.xml
 COPY --from=builder /build/compile_final.wasm /build/src/main/wasm/gocompiler.wasm
 COPY --from=builder /build/link_final.wasm  /build/src/main/wasm/golinker.wasm
 
-RUN mvn clean install
+RUN mvn -Dchicory.version=${CHICORY_VERSION} clean install
 
 # Stage 3 Build go root zip (we reuse the builder image to avoid additional dependencies)
-FROM golang:1.26-bookworm AS packer
+FROM golang:${GO_VERSION}-bookworm AS packer
 
 RUN apt update && apt-get install zip -y
 
@@ -57,3 +62,5 @@ COPY --from=jvm /build/target/generated-resources/chicory-compiler /resources/
 COPY --from=jvm /build/target/generated-sources/chicory-compiler /sources/
 
 COPY --from=packer /build/goroot.zip /files/goroot.zip
+COPY --from=builder /build/compile_final.wasm /wasm/gocompiler.wasm
+COPY --from=builder /build/link_final.wasm /wasm/golinker.wasm

@@ -213,6 +213,7 @@ public class GoCompiler {
      * @param args         Call args
      * @throws IOException
      */
+    @SuppressWarnings("unused")
     private static void compile(Path vfsWorkspace, Path vfsGoroot, List<String> args) throws IOException {
         final WasiOptions wasiOpts = WasiOptions.builder()
                 .withDirectory("/workspace", vfsWorkspace)
@@ -245,6 +246,7 @@ public class GoCompiler {
      * @param args         Call args
      * @throws IOException
      */
+    @SuppressWarnings("unused")
     private static void link(Path vfsWorkspace, Path vfsGoroot, List<String> args) throws IOException {
         final WasiOptions wasiOpts = WasiOptions.builder()
                 .withDirectory("/workspace", vfsWorkspace)
