@@ -35,7 +35,7 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <maven.compiler.release>21</maven.compiler.release>
-        <chicory.version>1.7.2</chicory.version>
+        <chicory.version>1.7.5</chicory.version>
         <golang.version>1.26</golang.version>
 
         <!-- Chicory interpreter fallback level. Necessary for dev profile -->
