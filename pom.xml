@@ -168,7 +168,7 @@
 
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.5.0</version>
             </plugin>
 
             <!-- Add the generated Chicory sources to the build path, necessary for the IDE to
