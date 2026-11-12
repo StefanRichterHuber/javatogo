@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
-        <chicory.version>1.7.2</chicory.version>
+        <chicory.version>1.7.5</chicory.version>
         <maven.compiler.release>21</maven.compiler.release>
 
         <!-- Unfortunately it is, as of now, not possible to build the go compiler without
