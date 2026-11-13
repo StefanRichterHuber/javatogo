@@ -27,7 +27,7 @@ RUN echo "# importcfg" > importcfg.txt && \
 
 
 # Stage 2: Build the native byte code from wasm with chicorey
-FROM maven:3.9.12-eclipse-temurin-21 AS jvm
+FROM maven:3.10.0-eclipse-temurin-21 AS jvm
 
 ARG CHICORY_VERSION
 
